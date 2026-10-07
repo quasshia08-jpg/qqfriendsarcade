@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Friends Arcade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root{
+  --bg:#08090c; --panel:#101218; --card:#151820; --text:#f5f7fb;
+  --muted:#8f96a5; --line:#272c37; --lime:#c8ff38; --pink:#ff5fd2;
+  --blue:#62d8ff; --shadow:0 20px 70px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:
+  radial-gradient(circle at 15% 0%,rgba(200,255,56,.09),transparent 28%),
+  radial-gradient(circle at 90% 15%,rgba(255,95,210,.08),transparent 25%),
+  var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;
+  background-image:linear-gradient(90deg,#fff 1px,transparent 1px),linear-gradient(#fff 1px,transparent 1px);
+  background-size:44px 44px;
+}
+button{font:inherit}
+.wrap{width:min(1080px,calc(100% - 32px));margin:auto}
+header{padding:24px 0 8px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:"Space Grotesk";font-weight:700;letter-spacing:-.04em}
+.logo span{color:var(--lime)}
+.header-btn{border:1px solid var(--line);background:#ffffff06;color:var(--text);border-radius:999px;padding:9px 13px;cursor:pointer}
+.hero{padding:70px 0 42px}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--lime)}
+h1{font-family:"Space Grotesk";font-size:clamp(52px,10vw,112px);line-height:.82;letter-spacing:-.075em;margin:16px 0 24px}
+h1 em{font-style:normal;color:var(--lime)}
+.hero-copy{max-width:620px;color:var(--muted);font-size:17px;line-height:1.6}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}
+.stat{border:1px solid var(--line);background:#ffffff05;border-radius:999px;padding:10px 15px;font-size:12px}
+.stat b{color:var(--lime)}
+.section{margin:20px 0;padding:24px;border:1px solid var(--line);background:linear-gradient(145deg,#11141b,#0d0f14);border-radius:28px;box-shadow:var(--shadow)}
+.section-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-end}
+.section h2{font-family:"Space Grotesk";font-size:25px;margin:0 0 6px}
+.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.friend{
+  min-height:105px;text-align:left;border:1px solid var(--line);background:var(--card);
+  color:var(--text);border-radius:18px;padding:14px;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s,background .2s;
+}
+.friend:hover{transform:translateY(-4px);border-color:#c8ff3866;background:#1b2029}
+.friend:after{content:"↗";position:absolute;right:12px;top:10px;color:#555d6b}
+.num{font-size:10px;color:var(--muted);letter-spacing:.12em}
+.friend strong{display:block;font-size:16px;margin-top:16px}
+.mystery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.box{
+  height:120px;border:1px solid var(--line);border-radius:20px;background:
+  radial-gradient(circle at 30% 20%,#ffffff0c,transparent 35%),#151820;
+  color:var(--lime);font-size:42px;font-weight:800;cursor:pointer;transition:.2s;
+}
+.box:hover{transform:translateY(-4px);border-color:var(--lime)}
+.box.open{font-size:14px;color:var(--text);padding:18px}
+.arena{
+  height:260px;border:1px dashed #343a48;border-radius:22px;margin-top:18px;
+  position:relative;overflow:hidden;background:
+  radial-gradient(circle at center,rgba(98,216,255,.09),transparent 45%);
+}
+.target{
+  position:absolute;width:62px;height:62px;border-radius:50%;border:2px solid var(--lime);
+  background:var(--lime);color:#0b0d0a;font-weight:900;cursor:pointer;display:none;
+  box-shadow:0 0 35px #c8ff3866;
+}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.action{
+  border:1px solid var(--line);background:#ffffff06;color:var(--text);
+  border-radius:13px;padding:12px 16px;cursor:pointer;font-weight:700;
+}
+.action:hover{border-color:var(--lime)}
+.primary{background:var(--lime);color:#0c1008;border-color:var(--lime)}
+.result{margin-top:13px;font-weight:800;min-height:22px}
+.final{
+  text-align:center;padding:42px 20px;
+  background:radial-gradient(circle at center,#c8ff3812,transparent 60%);
+}
+.lock{font-family:"Space Grotesk";font-size:30px;margin:8px 0}
+#toast{
+  position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(20px);
+  background:#151820;color:white;border:1px solid #3a414f;border-radius:999px;
+  padding:12px 18px;opacity:0;pointer-events:none;transition:.25s;z-index:20;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal{
+  position:fixed;inset:0;background:#000b;display:none;place-items:center;padding:20px;z-index:15;
+}
+.modal.show{display:grid}
+.modal-card{
+  width:min(520px,100%);background:#11141a;border:1px solid #343a48;border-radius:26px;
+  padding:28px;box-shadow:0 30px 100px #000;
+}
+.modal-num{font-size:11px;letter-spacing:.18em;color:var(--lime)}
+.modal-name{font-family:"Space Grotesk";font-size:46px;letter-spacing:-.05em;margin:10px 0}
+.close{float:right;border:0;background:transparent;color:#89909e;font-size:24px;cursor:pointer}
+.rare{color:var(--pink);font-weight:800}
+footer{text-align:center;color:#5f6674;padding:30px 0 55px;font-size:12px}
+.confetti{position:fixed;width:8px;height:8px;z-index:30;pointer-events:none;animation:fall 1.4s ease-out forwards}
+@keyframes fall{to{transform:translate(var(--x),var(--y)) rotate(700deg);opacity:0}}
+@media(max-width:760px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .hero{padding-top:45px}
+}
+@media(max-width:430px){
+  .wrap{width:min(100% - 20px,1080px)}
+  .section{padding:18px;border-radius:22px}
+  .grid{grid-template-columns:1fr 1fr}
+  .friend{min-height:92px}
+  .mystery{gap:8px}
+  .box{height:100px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="logo">FRIENDS<span>·</span>ARCADE</div>
+  <button class="header-btn" id="surpriseBtn">SURPRISE ME</button>
+</header>
+
+<main>
+<section class="hero">
+  <div class="kicker">11 PLAYERS · 1 VERY UNNECESSARY WEBSITE</div>
+  <h1>THE FRIENDS<br>ARCADE<em>.</em></h1>
+  <p class="hero-copy">
+    Welcome to the weird little corner of the internet dedicated to eleven names.
+    Click everything. Try things twice. Find secrets. The arcade is watching.
+  </p>
+  <div class="stats">
+    <div class="stat">SCORE <b id="score">0</b></div>
+    <div class="stat">FRIENDS FOUND <b id="found">0/11</b></div>
+    <div class="stat">SECRETS <b id="secrets">0</b></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-top">
+    <div>
+      <h2>01 — WHO'S WHO?</h2>
+      <div class="muted">Click a friend. Some cards may know more than they should.</div>
+    </div>
+  </div>
+  <div class="grid" id="friends"></div>
+</section>
+
+<section class="section">
+  <h2>02 — MYSTERY BOXES</h2>
+  <div class="muted">Three boxes. No hints. Click all of them.</div>
+  <div class="mystery">
+    <button class="box" data-box="0">?</button>
+    <button class="box" data-box="1">?</button>
+    <button class="box" data-box="2">?</button>
+  </div>
+</section>
+
+<section class="section">
+  <h2>03 — REACTION ARENA</h2>
+  <div class="muted">Start the round. Wait. When the target appears, hit it.</div>
+  <div class="arena" id="arena">
+    <button class="target" id="target">HIT</button>
+  </div>
+  <div class="actions">
+    <button class="action primary" id="start">START ROUND</button>
+  </div>
+  <div class="result" id="reaction"></div>
+</section>
+
+<section class="section">
+  <h2>04 — CHAOS CONTROL</h2>
+  <div class="muted">These buttons serve no important purpose. Probably.</div>
+  <div class="actions">
+    <button class="action" id="chaos">DO NOT CLICK</button>
+    <button class="action" id="random">RANDOM FRIEND</button>
+    <button class="action" id="secretBtn">???</button>
+  </div>
+  <div class="result" id="output"></div>
+</section>
+
+<section class="section final">
+  <div class="kicker">FINAL LOCK</div>
+  <div class="lock">CAN YOU UNLOCK THE ENDING?</div>
+  <div class="muted">Discover enough secrets to find out what happens.</div>
+  <div class="actions" style="justify-content:center">
+    <button class="action primary" id="unlock">CHECK THE LOCK</button>
+  </div>
+  <div class="result" id="lockMsg">🔒 LOCKED</div>
+</section>
+</main>
+
+<footer>THE FRIENDS ARCADE · BUILT FOR CHAOS</footer>
+</div>
+
+<div id="toast"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <button class="close" id="close">×</button>
+    <div class="modal-num" id="modalNum"></div>
+    <div class="modal-name" id="modalName"></div>
+    <div class="muted" id="modalText"></div>
+    <div class="actions">
+      <button class="action primary" id="modalScore">CLAIM +10</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const names = [
+  "Linkeye","Splendiz","Ijanks","Adlawan","Loranis","Ricoyan",
+  "Simarka","Prozena","Adanion","Joriwack","Remidon"
+];
+
+let score = 0;
+let found = new Set();
+let secrets = 0;
+let chaosClicks = 0;
+let modalClaimed = false;
+let reactionTimer = null;
+let reactionStart = 0;
+
+const $ = id => document.getElementById(id);
+
+function sync(){
+  $("score").textContent = score;
+  $("found").textContent = found.size + "/11";
+  $("secrets").textContent = secrets;
+}
+
+function addScore(n){
+  score += n;
+  sync();
+}
+
+function toast(message){
+  const t = $("toast");
+  t.textContent = message;
+  t.classList.add("show");
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => t.classList.remove("show"), 1700);
+}
+
+function confetti(){
+  for(let i=0;i<45;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=(50 + (Math.random()*16-8))+"%";
+    c.style.top="45%";
+    c.style.background=["#c8ff38","#ff5fd2","#62d8ff","#fff"][i%4];
+    c.style.setProperty("--x",(Math.random()*420-210)+"px");
+    c.style.setProperty("--y",(Math.random()*420-100)+"px");
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),1500);
+  }
+}
+
+const friends = $("friends");
+
+names.forEach((name,index)=>{
+  const card=document.createElement("button");
+  card.className="friend";
+  card.innerHTML =
+    '<span class="num">PLAYER '+String(index+1).padStart(2,"0")+'</span>'+
+    '<strong>'+name+'</strong>';
+  card.addEventListener("click",()=>{
+    found.add(name);
+    addScore(10);
+    openFriend(index,name);
+    if(found.size===11){
+      secrets++;
+      addScore(100);
+      confetti();
+      toast("ALL 11 FOUND · +100 BONUS");
+    }
+  });
+  friends.appendChild(card);
+});
+
+function openFriend(index,name){
+  modalClaimed=false;
+  $("modalNum").textContent="PLAYER "+String(index+1).padStart(2,"0");
+  $("modalName").textContent=name;
+  const lines=[
+    "The arcade has officially noticed this person.",
+    "No further information has been authorized.",
+    "A mysterious presence has been detected.",
+    "The system refuses to explain why this card exists.",
+    "Interesting choice. Very interesting."
+  ];
+  $("modalText").textContent=lines[index%lines.length];
+  $("modalScore").textContent="CLAIM +10";
+  $("modal").classList.add("show");
+}
+
+$("close").addEventListener("click",()=>$("modal").classList.remove("show"));
+$("modal").addEventListener("click",e=>{
+  if(e.target === $("modal")) $("modal").classList.remove("show");
+});
+$("modalScore").addEventListener("click",()=>{
+  if(modalClaimed)return;
+  modalClaimed=true;
+  addScore(10);
+  $("modalScore").textContent="CLAIMED ✓";
+  toast("+10 SCORE");
+});
+
+document.querySelectorAll(".box").forEach((box,index)=>{
+  box.addEventListener("click",()=>{
+    if(box.classList.contains("open"))return;
+    box.classList.add("open");
+
+    const messages=[
+      "🎁 +25 POINTS",
+      "👀 SECRET FOUND",
+      "😭 IT'S LITERALLY NOTHING"
+    ];
+
+    box.textContent=messages[index];
+
+    if(index===1){
+      secrets++;
+      addScore(25);
+      toast("SECRET FOUND · +25");
+    }else{
+      addScore(index===0 ? 25 : 5);
+      toast(messages[index]);
+    }
+
+    if(document.querySelectorAll(".box.open").length===3){
+      secrets++;
+      addScore(50);
+      confetti();
+      toast("ALL BOXES OPEN · BONUS SECRET");
+    }
+  });
+});
+
+$("random").addEventListener("click",()=>{
+  const name=names[Math.floor(Math.random()*names.length)];
+  addScore(15);
+  $("output").textContent="🎲 THE ARCADE CHOSE: "+name;
+  toast("RANDOM PICK · "+name);
+});
+
+$("chaos").addEventListener("click",()=>{
+  chaosClicks++;
+  addScore(5);
+
+  const messages=[
+    "I told you not to click.",
+    "Again? Really?",
+    "The button remembers this.",
+    "You are creating problems.",
+    "Fine. You win. Sort of."
+  ];
+
+  $("output").textContent=messages[Math.min(chaosClicks-1,4)];
+
+  if(chaosClicks===5){
+    secrets++;
+    addScore(50);
+    confetti();
+    toast("CHAOS MODE UNLOCKED · +50");
+  }
+});
+
+$("secretBtn").addEventListener("click",()=>{
+  secrets++;
+  addScore(30);
+  $("output").textContent="🕵️ YOU FOUND THE SUSPICIOUS BUTTON.";
+  toast("SECRET · +30");
+});
+
+$("surpriseBtn").addEventListener("click",()=>{
+  const actions=[
+    ()=>$("chaos").click(),
+    ()=>$("random").click(),
+    ()=>$("secretBtn").click(),
+    ()=>document.querySelector(".box").click()
+  ];
+  actions[Math.floor(Math.random()*actions.length)]();
+});
+
+$("start").addEventListener("click",()=>{
+  clearTimeout(reactionTimer);
+  $("reaction").textContent="WAIT FOR IT...";
+  $("target").style.display="none";
+
+  const delay=700+Math.random()*1800;
+
+  reactionTimer=setTimeout(()=>{
+    reactionStart=performance.now();
+    const target=$("target");
+    target.style.left=(5+Math.random()*82)+"%";
+    target.style.top=(10+Math.random()*68)+"%";
+    target.style.display="grid";
+
+    reactionTimer=setTimeout(()=>{
+      if(target.style.display==="grid"){
+        target.style.display="none";
+        $("reaction").textContent="TOO SLOW 😭";
+      }
+    },1200);
+  },delay);
+});
+
+$("target").addEventListener("click",()=>{
+  const ms=Math.round(performance.now()-reactionStart);
+  $("target").style.display="none";
+
+  const points=Math.max(10,100-Math.floor(ms/10));
+  addScore(points);
+  $("reaction").textContent=ms+" ms · +"+points+" POINTS";
+  toast("NICE REFLEXES ⚡");
+});
+
+$("unlock").addEventListener("click",()=>{
+  if(secrets>=3){
+    $("lockMsg").textContent="🔓 ARCADE MASTER · THE ENDING IS YOURS";
+    addScore(250);
+    confetti();
+    toast("FINAL SECRET UNLOCKED · +250");
+  }else{
+    $("lockMsg").textContent="🔒 LOCKED · You need 3 secrets. You have "+secrets+".";
+  }
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") $("modal").classList.remove("show");
+  if(e.key.toLowerCase()==="r") $("random").click();
+});
+
+sync();
+</script>
+</body>
+</html>
